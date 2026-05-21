@@ -347,38 +347,88 @@ PHOTO_START = os.path.join(BASE_DIR, "download (7).jpg")
 PHOTO_HELP = os.path.join(BASE_DIR, "download (8).jpg")
 PHOTO_OWNER = os.path.join(BASE_DIR, "download (9).jpg")
 
+# In-memory cache for uploaded Telegram file IDs
+_photo_cache = {
+    "start": None,
+    "help": None,
+    "owner": None,
+}
+
 
 # ─── command handlers ─────────────────────────────────────────────────
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info(f"/start from {update.effective_user.id}")
-    with open(PHOTO_START, "rb") as photo:
+    file_id = _photo_cache.get("start")
+    if file_id:
         await update.message.reply_photo(
-            photo=photo,
+            photo=file_id,
             caption=MSG_START,
             parse_mode=TgParseMode.HTML,
             reply_markup=kb_main()
         )
+    else:
+        with open(PHOTO_START, "rb") as photo:
+            sent = await update.message.reply_photo(
+                photo=photo,
+                caption=MSG_START,
+                parse_mode=TgParseMode.HTML,
+                reply_markup=kb_main()
+            )
+            if sent and sent.photo:
+                _photo_cache["start"] = sent.photo[-1].file_id
 
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info(f"/help from {update.effective_user.id}")
-    with open(PHOTO_HELP, "rb") as photo:
+    file_id = _photo_cache.get("help")
+    if file_id:
         await update.message.reply_photo(
-            photo=photo,
+            photo=file_id,
             caption=MSG_HELP,
             parse_mode=TgParseMode.HTML,
             reply_markup=kb_help()
         )
+    else:
+        with open(PHOTO_HELP, "rb") as photo:
+            sent = await update.message.reply_photo(
+                photo=photo,
+                caption=MSG_HELP,
+                parse_mode=TgParseMode.HTML,
+                reply_markup=kb_help()
+            )
+            if sent and sent.photo:
+                _photo_cache["help"] = sent.photo[-1].file_id
 
 async def cmd_owner(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info(f"/owner from {update.effective_user.id}")
-    with open(PHOTO_OWNER, "rb") as photo:
+    file_id = _photo_cache.get("owner")
+    if file_id:
         await update.message.reply_photo(
-            photo=photo,
+            photo=file_id,
             caption=MSG_OWNER,
             parse_mode=TgParseMode.HTML,
             reply_markup=kb_owner()
         )
+    else:
+        with open(PHOTO_OWNER, "rb") as photo:
+            sent = await update.message.reply_photo(
+                photo=photo,
+                caption=MSG_OWNER,
+                parse_mode=TgParseMode.HTML,
+                reply_markup=kb_owner()
+            )
+            if sent and sent.photo:
+                _photo_cache["owner"] = sent.photo[-1].file_id
+
+async def cmd_ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    t0 = time.time()
+    msg = await update.message.reply_text("🏓 <b>Pinging...</b>", parse_mode=TgParseMode.HTML)
+    elapsed = (time.time() - t0) * 1000
+    await msg.edit_text(
+        f"🏓 <b>Pong!</b>\n\n"
+        f"⚡ <b>Latency:</b> <code>{elapsed:.0f} ms</code>",
+        parse_mode=TgParseMode.HTML
+    )
 
 async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cb = update.callback_query
@@ -387,45 +437,97 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info(f"Callback '{d}' from {cb.from_user.id}")
 
     if d == "start":
-        with open(PHOTO_START, "rb") as photo:
+        file_id = _photo_cache.get("start")
+        if file_id:
             await cb.message.edit_media(
                 media=InputMediaPhoto(
-                    media=photo,
+                    media=file_id,
                     caption=MSG_START,
                     parse_mode=TgParseMode.HTML
                 ),
                 reply_markup=kb_main()
             )
+        else:
+            with open(PHOTO_START, "rb") as photo:
+                sent = await cb.message.edit_media(
+                    media=InputMediaPhoto(
+                        media=photo,
+                        caption=MSG_START,
+                        parse_mode=TgParseMode.HTML
+                    ),
+                    reply_markup=kb_main()
+                )
+                if sent and sent.photo:
+                    _photo_cache["start"] = sent.photo[-1].file_id
     elif d == "how":
-        with open(PHOTO_START, "rb") as photo:
+        file_id = _photo_cache.get("start")
+        if file_id:
             await cb.message.edit_media(
                 media=InputMediaPhoto(
-                    media=photo,
+                    media=file_id,
                     caption=MSG_HOW,
                     parse_mode=TgParseMode.HTML
                 ),
                 reply_markup=kb_how()
             )
+        else:
+            with open(PHOTO_START, "rb") as photo:
+                sent = await cb.message.edit_media(
+                    media=InputMediaPhoto(
+                        media=photo,
+                        caption=MSG_HOW,
+                        parse_mode=TgParseMode.HTML
+                    ),
+                    reply_markup=kb_how()
+                )
+                if sent and sent.photo:
+                    _photo_cache["start"] = sent.photo[-1].file_id
     elif d == "help":
-        with open(PHOTO_HELP, "rb") as photo:
+        file_id = _photo_cache.get("help")
+        if file_id:
             await cb.message.edit_media(
                 media=InputMediaPhoto(
-                    media=photo,
+                    media=file_id,
                     caption=MSG_HELP,
                     parse_mode=TgParseMode.HTML
                 ),
                 reply_markup=kb_help()
             )
+        else:
+            with open(PHOTO_HELP, "rb") as photo:
+                sent = await cb.message.edit_media(
+                    media=InputMediaPhoto(
+                        media=photo,
+                        caption=MSG_HELP,
+                        parse_mode=TgParseMode.HTML
+                    ),
+                    reply_markup=kb_help()
+                )
+                if sent and sent.photo:
+                    _photo_cache["help"] = sent.photo[-1].file_id
     elif d == "owner":
-        with open(PHOTO_OWNER, "rb") as photo:
+        file_id = _photo_cache.get("owner")
+        if file_id:
             await cb.message.edit_media(
                 media=InputMediaPhoto(
-                    media=photo,
+                    media=file_id,
                     caption=MSG_OWNER,
                     parse_mode=TgParseMode.HTML
                 ),
                 reply_markup=kb_owner()
             )
+        else:
+            with open(PHOTO_OWNER, "rb") as photo:
+                sent = await cb.message.edit_media(
+                    media=InputMediaPhoto(
+                        media=photo,
+                        caption=MSG_OWNER,
+                        parse_mode=TgParseMode.HTML
+                    ),
+                    reply_markup=kb_owner()
+                )
+                if sent and sent.photo:
+                    _photo_cache["owner"] = sent.photo[-1].file_id
 
 
 # ─── main bypass handler ─────────────────────────────────────────────
@@ -712,6 +814,7 @@ def main():
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CommandHandler("help", cmd_help))
     app.add_handler(CommandHandler("owner", cmd_owner))
+    app.add_handler(CommandHandler("ping", cmd_ping))
     app.add_handler(CallbackQueryHandler(on_callback))
     app.add_handler(MessageHandler(filters.TEXT & (filters.ChatType.PRIVATE | filters.ChatType.GROUPS), on_link))
 
