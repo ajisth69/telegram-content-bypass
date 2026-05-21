@@ -816,7 +816,13 @@ def main():
     app.add_handler(CommandHandler("owner", cmd_owner))
     app.add_handler(CommandHandler("ping", cmd_ping))
     app.add_handler(CallbackQueryHandler(on_callback))
-    app.add_handler(MessageHandler(filters.TEXT & (filters.ChatType.PRIVATE | filters.ChatType.GROUPS), on_link))
+    app.add_handler(
+        MessageHandler(
+            filters.Regex(r"(?i)t\.me/(?:c/\d+|s/[a-zA-Z0-9_]{4,}|[a-zA-Z0-9_]{4,})/\d+") &
+            (filters.ChatType.PRIVATE | filters.ChatType.GROUPS),
+            on_link
+        )
+    )
 
     log.info("Bot started. Send /start to test.")
     app.run_polling(drop_pending_updates=True)
