@@ -398,13 +398,14 @@ async def on_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     chat_id, msg_id = parse_link(text)
     if not chat_id:
-        await msg.reply_text(
-            "<blockquote>❓ <b>Invalid or unsupported link.</b>\n\n"
-            "Send a link in one of these formats:\n"
-            "● <code>https://t.me/username/123</code>\n"
-            "● <code>https://t.me/c/1234567890/123</code></blockquote>",
-            parse_mode=TgParseMode.HTML,
-        )
+        if msg.chat.type == "private":
+            await msg.reply_text(
+                "<blockquote>❓ <b>Invalid or unsupported link.</b>\n\n"
+                "Send a link in one of these formats:\n"
+                "● <code>https://t.me/username/123</code>\n"
+                "● <code>https://t.me/c/1234567890/123</code></blockquote>",
+                parse_mode=TgParseMode.HTML,
+            )
         return
 
     status = await msg.reply_text(
@@ -673,7 +674,7 @@ def main():
     app.add_handler(CommandHandler("help", cmd_help))
     app.add_handler(CommandHandler("owner", cmd_owner))
     app.add_handler(CallbackQueryHandler(on_callback))
-    app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, on_link))
+    app.add_handler(MessageHandler(filters.TEXT & (filters.ChatType.PRIVATE | filters.ChatType.GROUPS), on_link))
 
     log.info("Bot started. Send /start to test.")
     app.run_polling(drop_pending_updates=True)
