@@ -25,6 +25,7 @@ from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Update,
+    InputMediaPhoto,
 )
 from telegram.ext import (
     Application,
@@ -340,28 +341,44 @@ MSG_OWNER = """<blockquote>👤 <b>Developer Info</b></blockquote>
 <blockquote>💬 Slide into DMs if the bot is broken, or if you just wanna chat.
 I don't bite — unless the code does first.</blockquote>"""
 
+# ─── photo paths ──────────────────────────────────────────────────────
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PHOTO_START = os.path.join(BASE_DIR, "download (7).jpg")
+PHOTO_HELP = os.path.join(BASE_DIR, "download (8).jpg")
+PHOTO_OWNER = os.path.join(BASE_DIR, "download (9).jpg")
+
 
 # ─── command handlers ─────────────────────────────────────────────────
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info(f"/start from {update.effective_user.id}")
-    await update.message.reply_text(
-        MSG_START, parse_mode=TgParseMode.HTML,
-        reply_markup=kb_main(), disable_web_page_preview=True
-    )
+    with open(PHOTO_START, "rb") as photo:
+        await update.message.reply_photo(
+            photo=photo,
+            caption=MSG_START,
+            parse_mode=TgParseMode.HTML,
+            reply_markup=kb_main()
+        )
 
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info(f"/help from {update.effective_user.id}")
-    await update.message.reply_text(
-        MSG_HELP, parse_mode=TgParseMode.HTML, reply_markup=kb_help()
-    )
+    with open(PHOTO_HELP, "rb") as photo:
+        await update.message.reply_photo(
+            photo=photo,
+            caption=MSG_HELP,
+            parse_mode=TgParseMode.HTML,
+            reply_markup=kb_help()
+        )
 
 async def cmd_owner(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info(f"/owner from {update.effective_user.id}")
-    await update.message.reply_text(
-        MSG_OWNER, parse_mode=TgParseMode.HTML,
-        reply_markup=kb_owner(), disable_web_page_preview=True
-    )
+    with open(PHOTO_OWNER, "rb") as photo:
+        await update.message.reply_photo(
+            photo=photo,
+            caption=MSG_OWNER,
+            parse_mode=TgParseMode.HTML,
+            reply_markup=kb_owner()
+        )
 
 async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cb = update.callback_query
@@ -370,23 +387,45 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info(f"Callback '{d}' from {cb.from_user.id}")
 
     if d == "start":
-        await cb.message.edit_text(
-            MSG_START, parse_mode=TgParseMode.HTML,
-            reply_markup=kb_main(), disable_web_page_preview=True
-        )
+        with open(PHOTO_START, "rb") as photo:
+            await cb.message.edit_media(
+                media=InputMediaPhoto(
+                    media=photo,
+                    caption=MSG_START,
+                    parse_mode=TgParseMode.HTML
+                ),
+                reply_markup=kb_main()
+            )
     elif d == "how":
-        await cb.message.edit_text(
-            MSG_HOW, parse_mode=TgParseMode.HTML, reply_markup=kb_how()
-        )
+        with open(PHOTO_START, "rb") as photo:
+            await cb.message.edit_media(
+                media=InputMediaPhoto(
+                    media=photo,
+                    caption=MSG_HOW,
+                    parse_mode=TgParseMode.HTML
+                ),
+                reply_markup=kb_how()
+            )
     elif d == "help":
-        await cb.message.edit_text(
-            MSG_HELP, parse_mode=TgParseMode.HTML, reply_markup=kb_help()
-        )
+        with open(PHOTO_HELP, "rb") as photo:
+            await cb.message.edit_media(
+                media=InputMediaPhoto(
+                    media=photo,
+                    caption=MSG_HELP,
+                    parse_mode=TgParseMode.HTML
+                ),
+                reply_markup=kb_help()
+            )
     elif d == "owner":
-        await cb.message.edit_text(
-            MSG_OWNER, parse_mode=TgParseMode.HTML,
-            reply_markup=kb_owner(), disable_web_page_preview=True
-        )
+        with open(PHOTO_OWNER, "rb") as photo:
+            await cb.message.edit_media(
+                media=InputMediaPhoto(
+                    media=photo,
+                    caption=MSG_OWNER,
+                    parse_mode=TgParseMode.HTML
+                ),
+                reply_markup=kb_owner()
+            )
 
 
 # ─── main bypass handler ─────────────────────────────────────────────
