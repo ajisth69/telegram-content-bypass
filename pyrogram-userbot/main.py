@@ -20,6 +20,8 @@ from pyrogram.errors import (
 )
 from pyrogram.file_id import FileId, PHOTO_TYPES, DOCUMENT_TYPES
 from pyrogram.session import Session
+from pyrogram.session.auth import Auth
+
 
 from telegram import (
     InlineKeyboardButton,
@@ -116,10 +118,10 @@ async def _ensure_session(client, dc_id):
         await session.start()
     else:
         # different DC — need fresh DH key exchange
-        # pass empty auth key so Session generates a new one
+        auth_key = await Auth(client, dc_id, await client.storage.test_mode()).create()
         session = Session(
             client, dc_id,
-            b"\x00" * 256,  # placeholder, triggers new key exchange
+            auth_key,
             await client.storage.test_mode(),
             is_media=True,
         )
