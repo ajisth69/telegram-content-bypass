@@ -781,8 +781,6 @@ async def keep_alive_loop():
 
 
 async def start_dummy_server():
-    port = int(os.environ.get("PORT", "10000"))
-    
     async def handle_client(reader, writer):
         try:
             await reader.read(1024)
@@ -805,12 +803,13 @@ async def start_dummy_server():
                 pass
 
     try:
+        port = int(os.environ.get("PORT", "10000"))
         server = await asyncio.start_server(handle_client, "0.0.0.0", port)
         log.info(f"Dummy HTTP server listening on port {port} (for Render health checks)")
         async with server:
             await server.serve_forever()
     except Exception as e:
-        log.error(f"Failed to start dummy HTTP server on port {port}: {e}")
+        log.error(f"Failed to start dummy HTTP server: {e}")
 
 
 async def post_init(application):
