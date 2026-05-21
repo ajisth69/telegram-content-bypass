@@ -1,0 +1,19 @@
+services:
+  - type: worker
+    name: telegram-bypass-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    plan: free
+    envVars:
+      # Required — get BOT_TOKEN from @BotFather
+      - key: BOT_TOKEN
+        sync: false
+      # Required — generate via: python gen_session.py
+      - key: SESSION_STRING
+        sync: false
+      # Optional — defaults to official Telegram Android credentials
+      # - key: API_ID
+      #   sync: false
+      # - key: API_HASH
+      #   sync: false
