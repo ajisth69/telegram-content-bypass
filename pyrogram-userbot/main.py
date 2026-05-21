@@ -780,6 +780,39 @@ async def keep_alive_loop():
             pass
 
 
+async def start_dummy_server():
+    port = int(os.environ.get("PORT", "10000"))
+    
+    async def handle_client(reader, writer):
+        try:
+            await reader.read(1024)
+            response = (
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Type: text/plain\r\n"
+                "Content-Length: 2\r\n"
+                "Connection: close\r\n\r\n"
+                "OK"
+            )
+            writer.write(response.encode())
+            await writer.drain()
+        except Exception as e:
+            log.warning(f"Dummy server client error: {e}")
+        finally:
+            writer.close()
+            try:
+                await writer.wait_closed()
+            except Exception:
+                pass
+
+    try:
+        server = await asyncio.start_server(handle_client, "0.0.0.0", port)
+        log.info(f"Dummy HTTP server listening on port {port} (for Render health checks)")
+        async with server:
+            await server.serve_forever()
+    except Exception as e:
+        log.error(f"Failed to start dummy HTTP server on port {port}: {e}")
+
+
 async def post_init(application):
     # pre-warm the home DC media session only (safe and fast)
     # other DCs will be warmed lazily on first download
@@ -791,6 +824,9 @@ async def post_init(application):
         log.warning(f"Pre-warm failed: {e}")
     asyncio.create_task(keep_alive_loop())
     log.info("Keep-alive started")
+    asyncio.create_task(start_dummy_server())
+    log.info("Dummy HTTP server task started")
+
 
 
 def main():
